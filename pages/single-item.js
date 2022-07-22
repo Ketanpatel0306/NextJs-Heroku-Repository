@@ -1,8 +1,10 @@
+import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { Config } from "../config";
 
 const SingleItem = (props) => {
   const [save, setSave] = useState([]);
+  let route = useRouter();
   let matchId = props.mainId;
 
   const DataFetch = async () => {
@@ -21,7 +23,9 @@ const SingleItem = (props) => {
   useEffect(() => {
     DataFetch();
   }, []);
-
+  const GoBack = () => {
+    route.push("/");
+  };
   return (
     <div>
       <div
@@ -44,6 +48,7 @@ const SingleItem = (props) => {
                 padding: "0px 30px",
               }}
             >
+              <button onClick={() => GoBack()}>back</button>
               <p>
                 <b> Address: </b>
                 {item.address}

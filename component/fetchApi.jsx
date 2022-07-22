@@ -81,6 +81,7 @@ export const FetchApi = () => {
           );
         })}
       </div>
+      <button>add me</button>
     </div>
   );
 };

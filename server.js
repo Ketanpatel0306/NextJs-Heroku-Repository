@@ -53,8 +53,13 @@ if (!dev && cluster.isMaster) {
     );
 
     // Example server-side routing
-    server.get("/a", (req, res) => {
-      return nextApp.render(req, res, "/b", req.query);
+    server.get("/single-item/:id", (req, res) => {
+      // console.log("serverID", req.params.id);
+      const id = req.params.id;
+      const queryParams = {
+        itemId: id,
+      };
+      return nextApp.render(req, res, "/single-item", queryParams);
     });
 
     // Example server-side routing

@@ -1,24 +1,27 @@
-import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { Config } from "../config";
 
-export const FetchApi = () => {
+const SingleItem = (props) => {
   const [save, setSave] = useState([]);
-  const route = useRouter();
+  let matchId = props.mainId;
+
   const DataFetch = async () => {
     const response = await fetch(`${Config.BaseUrl}/users`, {
       method: "GET",
       headers: { Accept: "application/json" },
     });
     const data = await response.json();
-    setSave(data.data);
+
+    let newData = data.data.filter((i) => {
+      return i.id == matchId;
+    });
+
+    setSave(newData);
   };
   useEffect(() => {
     DataFetch();
   }, []);
-  const dataUpDate = (item) => {
-    route.push(`/single-item/${item.id}`);
-  };
+
   return (
     <div>
       <div
@@ -34,13 +37,12 @@ export const FetchApi = () => {
         {save.map((item, index) => {
           return (
             <div
-              key={index + "mapKey"}
+              key={index + "mapKey1"}
               style={{
                 backgroundColor: index % 2 === 0 ? "pink" : "greenyellow",
                 border: "1px solid black",
                 padding: "0px 30px",
               }}
-              onClick={() => dataUpDate(item)}
             >
               <p>
                 <b> Address: </b>
@@ -89,3 +91,12 @@ export const FetchApi = () => {
     </div>
   );
 };
+
+export default SingleItem;
+
+export async function getServerSideProps(context) {
+  const mainId = context.query.itemId;
+  return {
+    props: { mainId }, // will be passed to the page component as props
+  };
+}

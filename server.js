@@ -1,82 +1,36 @@
-const express = require("express");
+const { createServer } = require("http");
+const { parse } = require("url");
 const next = require("next");
-const path = require("path");
-const url = require("url");
-const cluster = require("cluster");
-const numCPUs = require("os").cpus().length;
 
 const dev = process.env.NODE_ENV !== "production";
-const port = process.env.PORT || 4000;
+const hostname = "localhost";
+const port = 3000;
+// when using middleware `hostname` and `port` must be provided below
+const app = next({ dev, hostname, port });
+const handle = app.getRequestHandler();
 
-// Multi-process to utilize all CPU cores.
-if (!dev && cluster.isMaster) {
-  console.log(`Node cluster master ${process.pid} is running`);
-  // Fork workers.
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-  }
-  cluster.on("exit", (worker, code, signal) => {
-    console.error(
-      `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`
-    );
-  });
-} else {
-  const nextApp = next({ dir: ".", dev });
-  const nextHandler = nextApp.getRequestHandler();
+app.prepare().then(() => {
+  createServer(async (req, res) => {
+    try {
+      // Be sure to pass `true` as the second argument to `url.parse`.
+      // This tells it to parse the query portion of the URL.
+      const parsedUrl = parse(req.url, true);
+      const { pathname, query } = parsedUrl;
 
-  nextApp.prepare().then(() => {
-    const server = express();
-
-    if (!dev) {
-      // Enforce SSL & HSTS in production
-      server.use(function (req, res, next) {
-        var proto = req.headers["x-forwarded-proto"];
-        if (proto === "https") {
-          res.set({
-            "Strict-Transport-Security": "max-age=31557600", // one-year
-          });
-          return next();
-        }
-        res.redirect("https://" + req.headers.host + req.url);
-      });
+      if (pathname === "/a") {
+        await app.render(req, res, "/a", query);
+      } else if (pathname === "/b") {
+        await app.render(req, res, "/b", query);
+      } else {
+        await handle(req, res, parsedUrl);
+      }
+    } catch (err) {
+      console.error("Error occurred handling", req.url, err);
+      res.statusCode = 500;
+      res.end("internal server error");
     }
-
-    // Static files
-    // https://github.com/zeit/next.js/tree/4.2.3#user-content-static-file-serving-eg-images
-    server.use(
-      "/static",
-      express.static(path.join(__dirname, "static"), {
-        maxAge: dev ? "0" : "365d",
-      })
-    );
-
-    // Example server-side routing
-    server.get("/single-item/:id", (req, res) => {
-      // console.log("serverID", req.params.id);
-      const id = req.params.id;
-      const queryParams = {
-        itemId: id,
-      };
-      return nextApp.render(req, res, "/single-item", queryParams);
-    });
-
-    // Example server-side routing
-    server.get("/b", (req, res) => {
-      return nextApp.render(req, res, "/a", req.query);
-    });
-
-    // Default catch-all renders Next app
-    server.get("*", (req, res) => {
-      // res.set({
-      //   'Cache-Control': 'public, max-age=3600'
-      // });
-      const parsedUrl = url.parse(req.url, true);
-      nextHandler(req, res, parsedUrl);
-    });
-
-    server.listen(port, (err) => {
-      if (err) throw err;
-      console.log(`Listening on http://localhost:${port}`);
-    });
+  }).listen(port, (err) => {
+    if (err) throw err;
+    console.log(`> Ready on http://${hostname}:${port}`);
   });
-}
+});

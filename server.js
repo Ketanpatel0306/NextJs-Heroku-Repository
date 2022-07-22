@@ -10,16 +10,16 @@ const port = process.env.PORT || 4000;
 
 // Multi-process to utilize all CPU cores.
 if (!dev && cluster.isMaster) {
-  // console.log(`Node cluster master ${process.pid} is running`);
-  // // Fork workers.
-  // for (let i = 0; i < numCPUs; i++) {
-  //   cluster.fork();
-  // }
-  // cluster.on("exit", (worker, code, signal) => {
-  //   console.error(
-  //     `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`
-  //   );
-  // });
+  console.log(`Node cluster master ${process.pid} is running`);
+  // Fork workers.
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+  cluster.on("exit", (worker, code, signal) => {
+    console.error(
+      `Node cluster worker ${worker.process.pid} exited: code ${code}, signal ${signal}`
+    );
+  });
 } else {
   const nextApp = next({ dir: ".", dev });
   const nextHandler = nextApp.getRequestHandler();

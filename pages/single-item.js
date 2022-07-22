@@ -43,7 +43,7 @@ const SingleItem = (props) => {
             <div
               key={index + "mapKey1"}
               style={{
-                backgroundColor: index % 2 === 0 ? "pink" : "greenyellow",
+                backgroundColor: matchId % 2 === 0 ? "pink" : "greenyellow",
                 border: "1px solid black",
                 padding: "0px 30px",
               }}

@@ -48,7 +48,9 @@ const SingleItem = (props) => {
                 padding: "0px 30px",
               }}
             >
-              <button onClick={() => GoBack()}>back</button>
+              <button style={{ cursor: "pointer" }} onClick={() => GoBack()}>
+                back
+              </button>
               <p>
                 <b> Address: </b>
                 {item.address}

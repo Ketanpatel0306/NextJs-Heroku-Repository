@@ -29,6 +29,7 @@ export const FetchApi = () => {
           backgroundColor: "yellow",
           alignItems: "center",
           height: "100%",
+          cursor: "pointer",
         }}
       >
         {save.map((item, index) => {
